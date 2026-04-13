@@ -70,14 +70,14 @@ describe("RickMortyApiAdapter", () => {
           name: "Rick Sanchez",
           status: "Alive",
           species: "Human",
-          image: "",
+          image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
         },
         {
           id: 2,
           name: "Morty Smith",
           status: "Alive",
           species: "Human",
-          image: "",
+          image: "https://rickandmortyapi.com/api/character/avatar/2.jpeg",
         },
       ];
       mockedGet.mockResolvedValue({ data });
@@ -87,7 +87,10 @@ describe("RickMortyApiAdapter", () => {
       expect(mockedGet).toHaveBeenCalledWith(
         "https://rickandmortyapi.com/api/character/1,2",
       );
-      expect(result).toEqual(data);
+      expect(result).toEqual([
+        { ...data[0], image: "/images/character/1" },
+        { ...data[1], image: "/images/character/2" },
+      ]);
     });
 
     it("should wrap a single character object in an array", async () => {
@@ -96,13 +99,13 @@ describe("RickMortyApiAdapter", () => {
         name: "Rick Sanchez",
         status: "Alive",
         species: "Human",
-        image: "",
+        image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
       };
       mockedGet.mockResolvedValue({ data });
 
       const result = await adapter.findByIds([1]);
 
-      expect(result).toEqual([data]);
+      expect(result).toEqual([{ ...data, image: "/images/character/1" }]);
     });
 
     it("should propagate network errors", async () => {

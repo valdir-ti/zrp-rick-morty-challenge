@@ -20,6 +20,8 @@ const makeGetEpisodeCharacters = (result?: unknown, error?: Error) => ({
     : jest.fn().mockResolvedValue(result),
 });
 
+const makeImageProxy = () => ({ prefetch: jest.fn() });
+
 describe("EpisodeController", () => {
   describe("listEpisodes", () => {
     it("should return episodes using the page query param", async () => {
@@ -28,6 +30,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         getEpisodes as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { query: { page: "2" } } as unknown as Request;
       const res = makeRes();
@@ -43,6 +46,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         getEpisodes as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { query: {} } as unknown as Request;
       const res = makeRes();
@@ -57,6 +61,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         getEpisodes as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { query: { page: "abc" } } as unknown as Request;
       const res = makeRes();
@@ -71,6 +76,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         getEpisodes as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { query: {} } as unknown as Request;
       const res = makeRes();
@@ -91,6 +97,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         makeGetEpisodes() as never,
         getEpisodeCharacters as never,
+        makeImageProxy() as never,
       );
       const req = { params: { id: "1" } } as unknown as Request;
       const res = makeRes();
@@ -101,10 +108,30 @@ describe("EpisodeController", () => {
       expect(res.json).toHaveBeenCalledWith(characters);
     });
 
+    it("should trigger image prefetch with character ids after responding", async () => {
+      const characters = [
+        { id: 1, name: "Rick" },
+        { id: 2, name: "Morty" },
+      ];
+      const imageProxy = makeImageProxy();
+      const controller = new EpisodeController(
+        makeGetEpisodes() as never,
+        makeGetEpisodeCharacters(characters) as never,
+        imageProxy as never,
+      );
+      const req = { params: { id: "1" } } as unknown as Request;
+      const res = makeRes();
+
+      await controller.listEpisodeCharacters(req, res);
+
+      expect(imageProxy.prefetch).toHaveBeenCalledWith(["1", "2"]);
+    });
+
     it("should return 400 for a non-numeric episode id", async () => {
       const controller = new EpisodeController(
         makeGetEpisodes() as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { params: { id: "abc" } } as unknown as Request;
       const res = makeRes();
@@ -119,6 +146,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         makeGetEpisodes() as never,
         makeGetEpisodeCharacters() as never,
+        makeImageProxy() as never,
       );
       const req = { params: {} } as unknown as Request;
       const res = makeRes();
@@ -136,6 +164,7 @@ describe("EpisodeController", () => {
       const controller = new EpisodeController(
         makeGetEpisodes() as never,
         getEpisodeCharacters as never,
+        makeImageProxy() as never,
       );
       const req = { params: { id: "1" } } as unknown as Request;
       const res = makeRes();

@@ -25,6 +25,9 @@ export class RickMortyApiAdapter
     const response = await axios.get<Character | Character[]>(
       `${BASE_URL}/character/${ids.join(",")}`,
     );
-    return Array.isArray(response.data) ? response.data : [response.data];
+    const chars = Array.isArray(response.data)
+      ? response.data
+      : [response.data];
+    return chars.map((c) => ({ ...c, image: `/images/character/${c.id}` }));
   }
 }

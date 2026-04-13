@@ -17,6 +17,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     "/node_modules/",
+    "/dist/",
     "src/services/rickMortyService.test.ts",
   ],
 };
