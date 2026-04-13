@@ -15,6 +15,17 @@ const episode: Episode = {
 
 const characters: Character[] = [
   {
+    id: 2,
+    name: "Morty Smith",
+    status: "Alive",
+    species: "Human",
+    type: "",
+    gender: "Male",
+    image: "/images/character/2",
+    origin: { name: "Earth" },
+    location: { name: "Earth (C-137)" },
+  },
+  {
     id: 1,
     name: "Rick Sanchez",
     status: "Alive",
@@ -73,7 +84,9 @@ describe("useCharacters", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.characters).toEqual(characters);
+    expect(result.current.characters).toHaveLength(2);
+    expect(result.current.characters[0].name).toBe("Morty Smith");
+    expect(result.current.characters[1].name).toBe("Rick Sanchez");
     expect(result.current.loadingProgress).toBe(100);
   });
 

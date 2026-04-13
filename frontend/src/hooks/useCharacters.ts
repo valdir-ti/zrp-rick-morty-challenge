@@ -58,9 +58,10 @@ export function useCharacters(): UseCharactersReturn {
     setLoadingProgress(0);
     setError(null);
     fetchEpisodeCharacters(episode.id)
-      .then((chars) =>
-        preloadImages(chars, setLoadingProgress).then(() => chars),
-      )
+      .then((chars) => {
+        const sorted = [...chars].sort((a, b) => a.name.localeCompare(b.name));
+        return preloadImages(sorted, setLoadingProgress).then(() => sorted);
+      })
       .then(setCharacters)
       .catch(() => setError("Não foi possível carregar os personagens."))
       .finally(() => setLoading(false));
