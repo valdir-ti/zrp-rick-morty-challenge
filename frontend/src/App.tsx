@@ -1,121 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEpisodes } from './hooks/useEpisodes'
+import { useCharacters } from './hooks/useCharacters'
+import { EpisodeCard } from './components/EpisodeCard/EpisodeCard'
+import { Pagination } from './components/Pagination/Pagination'
+import { CharacterModal } from './components/CharacterModal/CharacterModal'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { episodes, info, page, loading, error, setPage } = useEpisodes()
+  const { selectedEpisode, characters, loading: charLoading, loadingProgress, error: charError, open, close } = useCharacters()
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-[#0d1117] text-white">
+      {/* Header */}
+      <header className="border-b border-gray-800">
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold">Rick &amp; Morty</h1>
+          <p className="text-gray-400 text-sm">Explorador de Episódios</p>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        {/* Summary bar */}
+        {info && !loading && (
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
+            <p className="text-gray-400 text-sm">
+              <span className="text-white font-medium">{info.count}</span> episódios encontrados
+            </p>
+            <p className="text-gray-400 text-sm">
+              Página <span className="text-white font-medium">{page}</span> de{' '}
+              <span className="text-white font-medium">{info.pages}</span>
+            </p>
+          </div>
+        )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center py-24">
+            <div className="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        {/* Error */}
+        {error && (
+          <p className="text-red-400 text-center py-16">{error}</p>
+        )}
+
+        {/* Episode grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {episodes.map((ep) => (
+              <EpisodeCard key={ep.id} episode={ep} onClick={open} />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {info && !loading && (
+          <div className="mt-8">
+            <Pagination
+              current={page}
+              total={info.pages}
+              hasNext={!!info.next}
+              hasPrev={!!info.prev}
+              onNext={() => setPage(page + 1)}
+              onPrev={() => setPage(page - 1)}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* Character modal */}
+      {selectedEpisode && (
+        <CharacterModal
+          episode={selectedEpisode}
+          characters={characters}
+          loading={charLoading}
+          loadingProgress={loadingProgress}
+          error={charError}
+          onClose={close}
+        />
+      )}
+    </div>
   )
 }
+
 
 export default App
